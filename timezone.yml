@@ -1,0 +1,24 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: set timezone
+    file:
+      src: /usr/share/zoneinfo/Asia/Shanghai
+      dest: /etc/localtime
+      state: link
+      force: yes
+  - name: set /etc/sysconfig/clock
+    lineinfile: 
+      name: /etc/sysconfig/clock
+      regexp: '^ZONE=(?!"Asia/Shanghai")'
+      line: "ZONE=\"Asia/Shanghai\"\nUTC=false"
+      backrefs: yes
+  - name: set /etc/adjtime
+    lineinfile:
+      name: /etc/adjtime
+      regexp: '^UTC'
+      line: 'LOCAL'
+      backrefs: yes
+        
