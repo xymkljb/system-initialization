@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: disable selinux
+    lineinfile:
+     name: /etc/selinux/config
+     regexp: '^SELINUX='
+     line: 'SELINUX=disabled'
+
