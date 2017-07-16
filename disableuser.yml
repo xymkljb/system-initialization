@@ -10,11 +10,9 @@
       replace: "{{ item.line }}"
     with_items:
       - { regexp: '^bin', line: '#bin' }
-      - { regexp: '^daemon', line: '#daemon' }
       - { regexp: '^adm', line: '#adm' }
       - { regexp: '^lp', line: '#lp' }
       - { regexp: '^sync', line: '#sync' }
-      - { regexp: '^shutdown', line: '#shutdown' }
       - { regexp: '^halt', line: '#halt' }
       - { regexp: '^mail', line: '#mail' }
       - { regexp: '^uucp', line: '#uucp' }
@@ -28,9 +26,7 @@
       - { regexp: '^vcsa', line: '#vcsa' }
       - { regexp: '^abrt', line: '#abrt' }
       - { regexp: '^haldaemon', line: '#haldaemon' }
-      - { regexp: '^ntp', line: '#ntp' }
       - { regexp: '^saslauth', line: '#saslauth' }
       - { regexp: '^postfix', line: '#postfix' }
       - { regexp: '^nfsnobody', line: '#nfsnobody' }
-      - { regexp: '^sshd', line: '#sshd' }
       - { regexp: '^tcpdump', line: '#tcpdump' }

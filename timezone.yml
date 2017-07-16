@@ -10,15 +10,12 @@
       state: link
       force: yes
   - name: set /etc/sysconfig/clock
-    lineinfile: 
+    replace: 
       name: /etc/sysconfig/clock
       regexp: '^ZONE=(?!"Asia/Shanghai")'
-      line: "ZONE=\"Asia/Shanghai\"\nUTC=false"
-      backrefs: yes
+      replace: "ZONE=\"Asia/Shanghai\"\nUTC=false"
   - name: set /etc/adjtime
-    lineinfile:
+    replace:
       name: /etc/adjtime
-      regexp: '^UTC'
-      line: 'LOCAL'
-      backrefs: yes
-        
+      regexp: 'UTC'
+      replace: 'LOCAL'

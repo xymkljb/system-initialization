@@ -1,0 +1,16 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: limit login tries
+    replace: 
+      name: /etc/pam.d/system-auth
+      regexp: "#%PAM-1.0(?!\nauth)"
+      replace: '#%PAM-1.0\nauth  required pam_tally2.so deny=6 unlock_time=300 even_deny_root root_unlock_time=30'
+  - name: limit ssh tries
+    replace: 
+      name: /etc/pam.d/password-auth
+      regexp: "#%PAM-1.0(?!\nauth)"
+      replace: '#%PAM-1.0\nauth  required pam_tally2.so deny=6 unlock_time=300 even_deny_root root_unlock_time=30'
+
