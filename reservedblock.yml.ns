@@ -1,7 +1,0 @@
----
-- hosts: all
-  gather_facts: Fasle
-  remote_user: root
-  tasks:
-  - name: setting reserved blocks to 1%
-    shell: "for i in $(df -h | grep /dev/sd | awk '{print $1}');do tune2fs -m 1 $i;done"
