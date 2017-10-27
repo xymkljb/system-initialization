@@ -1,0 +1,16 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: check mount point
+    template:
+      src: templates/filesystem_tuning.sh
+      dest: /tmp/ansible/filesystem_tuning.sh
+      owner: root
+      group: root
+      mode: 700
+  - name: execute script
+    shell: /tmp/ansible/filesystem_tuning.sh
+    args:
+        creates: /tmp/ansible/filesystem_tuning.log

@@ -1,0 +1,22 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: disable selinux
+#    selinux:
+#      state: disabled
+    lineinfile:
+      name: /etc/selinux/config
+      regexp: '^SELINUX='
+      line: 'SELINUX=disabled'
+  - name: modify /etc/host.conf to enable nospoof
+    replace:
+      name: /etc/host.conf
+      regexp: "^multi on(?!\norder)"
+      replace: "multi on\norder hosts,bind\nnospoof on"
+  - name: check init level 
+    replace: 
+      name: /etc/inittab
+      regexp: "id:?:initdefault:"
+      replace: "id:3:initdefault:"
