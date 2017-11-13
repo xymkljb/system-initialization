@@ -3,20 +3,65 @@
   gather_facts: False
   remote_user: root
   tasks:
-  - name: disable selinux
-#    selinux:
-#      state: disabled
-    lineinfile:
-      name: /etc/selinux/config
-      regexp: '^SELINUX='
-      line: 'SELINUX=disabled'
-  - name: modify /etc/host.conf to enable nospoof
-    replace:
-      name: /etc/host.conf
-      regexp: "^multi on(?!\norder)"
-      replace: "multi on\norder hosts,bind\nnospoof on"
   - name: check init level 
     replace: 
       name: /etc/inittab
       regexp: "id:?:initdefault:"
       replace: "id:3:initdefault:"
+  - name: limit login tries
+    lineinfile: 
+      name: /etc/pam.d/system-auth
+      insertafter: 'User changes'
+      line: 'auth  required pam_tally2.so deny=6 unlock_time=300 even_deny_root root_unlock_time=30'
+  - name: limit ssh tries
+    lineinfile: 
+      name: /etc/pam.d/password-auth
+      insertafter: 'User changes'
+      line: 'auth  required pam_tally2.so deny=6 unlock_time=300 even_deny_root root_unlock_time=30'
+  - name: tuning prompt
+    lineinfile:
+      dest: /etc/profile
+      line: "{{ item }}"
+    with_items:
+     - LANG=en_US.UTF-8
+     - LC_ALL=en_US.UTF-8
+     - export HISTTIMEFORMAT="%F %T `whoami` "
+     - PS1="\n\e[1;37m[\e[0;32m\u\e[0;35m@\e[0;32m$HOSTNAME\e[1;37m]\e[1;37m[\e[0;31m\w\e[1;37m]\n"'\$ '
+  - name: disable selinux
+#    selinux:
+#      state: disabled
+    lineinfile:
+      dest: /etc/selinux/config
+      regexp: '^SELINUX='
+      line: 'SELINUX=disabled'
+  - name: disable transparent_hugepage
+    lineinfile:
+      dest: /etc/rc.local
+      line: "{{ item }}"
+    with_items:
+      - echo never > /sys/kernel/mm/redhat_transparent_hugepage/enabled
+      - echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
+  - name: check whether swap is on or not
+    shell: cat /proc/swaps | wc -l
+    register: result
+    changed_when: result.stdout != '1'
+    notify: disable_swap
+  - name: check whether ulimits configurations are exist or not
+    shell: grep '65536' /etc/security/limits.conf | wc -l
+    register: result
+    changed_when: result.stdout == '0'
+    notify:
+    - delete_90-nproc.conf
+    - add_ulimits
+  handlers:
+  - name: delete_90-nproc.conf
+    file: 
+      path: /etc/security/limits.d/90-nproc.conf
+      state: absent
+  - name: add_ulimits
+    lineinfile:
+      dest: /etc/security/limits.conf
+      insertbefore: '^# End of file'
+      line: "*\tsoft\tnofile\t65536\n*\thard\tnofile\t65536\n*\tsoft\tnproc\t65536\n*\thard\tnproc\t65536\n*\tsoft\tstack\t65536\n*\thard\tstack\t65536"
+  - name: disable_swap
+    shell: swapoff -a

@@ -1,0 +1,69 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: add SYNC_HWCLOCK to ntpd
+    lineinfile: 
+      dest: /etc/sysconfig/ntpd
+      line: "SYNC_HWCLOCK=yes"
+  - name: add SYNC_HWCLOCK to ntpdate
+    lineinfile: 
+      dest: /etc/sysconfig/ntpdate
+      regexp: '^SYNC_HWCLOCK'
+      line: "SYNC_HWCLOCK=yes"
+  - name: add servers to step-tickers
+    lineinfile: 
+      dest: /etc/ntp/step-tickers
+      line: "{{ item }}"
+    with_items:
+      - 10.35.129.59
+      - 10.35.129.60
+  - name: modify ntp.conf
+    template:
+      src: templates/ntp.conf
+      dest: /etc/ntp.conf
+      owner: root
+      group: root
+      mode: 0644
+      backup: yes
+    notify: 
+      - stop_ntpd
+      - start_ntpdate&ntpd
+      - set_hwclock
+  - name: set timemzone
+    file: 
+      src: /usr/share/zoneinfo/Asia/Shanghai
+      dest: /etc/localtime
+      state: link
+      force: yes
+  - name: modify /etc/sysconfig/clock
+    lineinfile:
+      dest: /etc/sysconfig/clock
+      regexp: '^ZONE='
+      line: ZONE="Asia/Shanghai"
+#      regexp: '^ZONE=(?!"Asia/Shanghai")'
+#      line: "ZONE=\"Asia/Shanghai\"\nUTC=false"
+#      backrefs: yes
+#  - name: modify /etc/adjtime
+#    lineinfile:
+#      dest: /etc/adjtime
+#      regexp: 'UTC'
+#      line: 'LOCAL'
+#      backrefs: yes
+  handlers:
+  - name: stop_ntpd
+    service:
+      name: "{{ item }}"
+      state: stopped
+    with_items:
+      - ntpd
+  - name: start_ntpdate&ntpd
+    service: 
+      name: "{{ item }}"
+      state: started
+    with_items:
+      - ntpdate
+      - ntpd
+  - name: set_hwclock
+    shell: hwclock --systohc

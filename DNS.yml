@@ -1,0 +1,19 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: add nameservers
+    lineinfile:
+      dest: /etc/resolv.conf
+      line: "{{ item }}"
+    with_items:
+    - nameserver 10.35.129.60
+    - nameserver 10.35.129.61
+  - name: modify /etc/host.conf to enable nospoof
+    lineinfile:
+      dest: /etc/host.conf
+      line: "{{ item }}"
+    with_items:
+    - order hosts,bind
+    - nospoof on

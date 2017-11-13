@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: check repos are exist or not
+    shell: ls /etc/yum.repos.d/CentOS* | wc -l
+    register: result
+    changed_when: result.stdout != '0'
+    notify:
+    - delete_default_repos
+    - unarchive_new_repos
+    - yum_clean_all
+  handlers:
+  - name: yum_clean_all
+    command: yum clean all
+    args:
+      warn: no
+  - name: delete_default_repos
+    file:
+      dest: /etc/yum.repos.d/
+      state: absent
+  - name: unarchive_new_repos
+    unarchive: 
+      src: files/repos.tar.gz
+      dest: /etc/

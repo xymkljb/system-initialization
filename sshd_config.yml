@@ -1,0 +1,21 @@
+---
+- hosts: all
+  gather_facts: False
+  remote_user: root
+  tasks:
+  - name: recycle sftp privilege
+    file:
+      path: /usr/libexec/openssh/sftp-server
+      mode: 0700
+  - name: update sshd_config
+    template:
+      src: templates/sshd_config
+      dest: /etc/ssh/sshd_config
+      owner: root
+      group: root
+      mode: 0600
+      backup: yes
+    notify: restart_sshd
+  handlers:
+  - name: restart_sshd
+    service: name=sshd state=restarted
